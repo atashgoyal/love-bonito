@@ -15,7 +15,13 @@
           <span class="ml-auto mr-auto">{{ location.name }}</span>
         </b-list-group-item>
       </b-list-group>
-      <b-modal id="modal-lg" size="lg" v-bind:title="modalTitle" ok-only v-if="showModal">
+      <b-modal
+        id="modal-lg"
+        size="lg"
+        v-bind:title="modalTitle"
+        ok-only
+        v-if="showModal"
+      >
         <div>
           <b-card-group columns>
             <b-card
@@ -60,46 +66,153 @@
 </template>
 
 <script>
+const DB_NAME = "rickyMortyLocationsdb";
+const DB_NAME2 = "rickyMortyCharacterdb";
+const DB_VERSION = 1;
+
 export default {
   name: "Locations",
   data() {
     return {
+      db: null,
+      db2: null,
       locations: null,
+      residentsDB: [],
+      charactersDB: [],
       showModal: false,
       residents: [],
       pageLoading: true,
-      modalTitle: null
+      modalTitle: null,
     };
   },
+  async created() {
+    this.db = await this.getDb();
+    this.locations = await this.getLocationsFromDb();
+    if (!this.locations.length) {
+      const response = await this.$http.get(
+        "https://rickandmortyapi.com/api/location/"
+      );
+      this.locations = response.data.results;
+      await this.addLocationsToDb(this.locations);
+      this.pageLoading = false;
+    } else {
+      this.locations = this.locations[0];
+      this.pageLoading = false;
+    }
+  },
   methods: {
+    async addLocationsToDb(locations) {
+      return new Promise((resolve, reject) => {
+        const trans = this.db.transaction(["locations"], "readwrite");
+        trans.oncomplete = (e) => {
+          resolve(e);
+        };
+        const store = trans.objectStore("locations");
+        store.add(locations);
+      });
+    },
+    async getDb() {
+      return new Promise((resolve, reject) => {
+        const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = (e) => {
+          reject("Error");
+        };
+        request.onsuccess = (e) => {
+          resolve(e.target.result);
+        };
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          db.createObjectStore("locations", {
+            autoIncrement: true,
+            keyPath: "id",
+          });
+        };
+      });
+    },
+    async getDb2() {
+      return new Promise((resolve, reject) => {
+        const request = window.indexedDB.open(DB_NAME2, DB_VERSION);
+        request.onerror = (e) => {
+          reject("Error");
+        };
+        request.onsuccess = (e) => {
+          resolve(e.target.result);
+        };
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          db.createObjectStore("character", {
+            autoIncrement: true,
+            keyPath: "id",
+          });
+        };
+      });
+    },
+    async getLocationsFromDb() {
+      return new Promise((resolve, reject) => {
+        const trans = this.db.transaction(["locations"], "readonly");
+        const locations = [];
+        trans.oncomplete = (e) => {
+          resolve(locations);
+        };
+        const store = trans.objectStore("locations");
+        store.openCursor().onsuccess = (e) => {
+          const cursor = e.target.result;
+          if (cursor) {
+            locations.push(cursor.value);
+            cursor.continue();
+          }
+        };
+      });
+    },
+    async getCharacterFromDb() {
+      return new Promise((resolve, reject) => {
+        const trans = this.db2.transaction(["character"], "readonly");
+        const character = [];
+        trans.oncomplete = (e) => {
+          resolve(character);
+        };
+        const store = trans.objectStore("character");
+        store.openCursor().onsuccess = (e) => {
+          const cursor = e.target.result;
+          if (cursor) {
+            character.push(cursor.value);
+            cursor.continue();
+          }
+        };
+      });
+    },
     async changeState(id) {
       this.showModal = true;
       this.residents = [];
-      let serviceCalls = 0;
       this.modalTitle = this.locations[id].name;
+      this.db2 = await this.getDb2();
+      this.charactersDB = await this.getCharacterFromDb();
       this.locations[id].residents.forEach((url) => {
-        this.$http.get(url)
-          .then(async (response) => {
+        this.character = this.charactersDB.filter((ch) => ch.url === url)[0];
+        if (!this.character) {
+          this.$http.get(url).then(async (response) => {
             const data = await response.data;
             this.residents.push(data);
-            serviceCalls++;
-          })
+            await this.addCharacterToDb(data);
+          });
+        } else {
+          this.residents.push(this.character);
+        }
+      });
+    },
+    async addCharacterToDb(character) {
+      return new Promise((resolve, reject) => {
+        const trans = this.db2.transaction(["character"], "readwrite");
+        trans.oncomplete = (e) => {
+          resolve(e);
+        };
+        const store = trans.objectStore("character");
+        store.add(character);
       });
     },
   },
-  async created() {
-    const response = await this.$http.get("https://rickandmortyapi.com/api/location/");
-    this.locations = response.data.results;
-    this.pageLoading = false;
-  },
-  async fetchResidentData(url) {
-    const response = await this.$http.get(url);
-    this.residents.push(response.data);
-  },
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .alert {
   background-color: yellow;

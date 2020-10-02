@@ -3,7 +3,8 @@
     <div v-if="pageLoading" class="m-5">
       <b-spinner class="m-5" label="Busy"></b-spinner>
     </div>
-    <b-card v-if="!pageLoading"
+    <b-card
+      v-if="!pageLoading"
       v-bind:img-src="character.image"
       img-alt="Image"
       img-top
@@ -35,22 +36,83 @@
 </template>
 
 <script>
+const DB_NAME = "rickyMortyCharacterdb";
+const DB_VERSION = 1;
+
 export default {
   name: "Character",
   data() {
     return {
+      db: null,
       character: null,
       id: this.$route.params.id,
-      pageLoading: true
+      pageLoading: true,
+      charactersDB: [],
     };
   },
   async created() {
-    const response = await this.$http.get(
-      "https://rickandmortyapi.com/api/character/" + this.id
-    );
-    const data = response.data;
-    this.pageLoading = false;
-    this.character = data;
+    this.db = await this.getDb();
+    this.charactersDB = await this.getCharacterFromDb();
+    this.character = this.charactersDB.filter(
+      (ch) => ch.id === parseInt(this.id)
+    )[0];
+    if (!this.character) {
+      const response = await this.$http.get(
+        "https://rickandmortyapi.com/api/character/" + this.id
+      );
+      await this.addCharacterToDb(response.data);
+      this.pageLoading = false;
+      this.character = response.data;
+    } else {
+      this.pageLoading = false;
+    }
+  },
+  methods: {
+    async addCharacterToDb(character) {
+      return new Promise((resolve, reject) => {
+        const trans = this.db.transaction(["character"], "readwrite");
+        trans.oncomplete = (e) => {
+          resolve(e);
+        };
+        const store = trans.objectStore("character");
+        store.add(character);
+      });
+    },
+    async getDb() {
+      return new Promise((resolve, reject) => {
+        const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = (e) => {
+          reject("Error");
+        };
+        request.onsuccess = (e) => {
+          resolve(e.target.result);
+        };
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          db.createObjectStore("character", {
+            autoIncrement: true,
+            keyPath: "id",
+          });
+        };
+      });
+    },
+    async getCharacterFromDb() {
+      return new Promise((resolve, reject) => {
+        const trans = this.db.transaction(["character"], "readonly");
+        const character = [];
+        trans.oncomplete = (e) => {
+          resolve(character);
+        };
+        const store = trans.objectStore("character");
+        store.openCursor().onsuccess = (e) => {
+          const cursor = e.target.result;
+          if (cursor) {
+            character.push(cursor.value);
+            cursor.continue();
+          }
+        };
+      });
+    },
   },
 };
 </script>
