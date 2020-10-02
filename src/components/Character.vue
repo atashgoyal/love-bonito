@@ -10,13 +10,13 @@
       img-top
       tag="article"
       style="max-width: 25rem"
-      class="mb-2 mx-auto shadow-lg mt-3"
+      class="mx-auto shadow-lg  character"
     >
       <b-card-title class="text-truncate"> {{ character.name }}</b-card-title>
       <b-card-text>
         <p class="m-0 text-warning">{{ character.species }}</p>
         <p
-          class="m-0"
+          class="m-0 text-bold"
           v-bind:class="[
             character.status === 'Dead'
               ? 'text-danger'
@@ -116,3 +116,11 @@ export default {
   },
 };
 </script>
+<style scoped>
+.character:hover {
+  box-shadow: 0px 2px 4px 5px rgba(0, 0, 0, 0.25) !important;
+}
+.text-bold {
+  font-weight: bold;
+}
+</style>

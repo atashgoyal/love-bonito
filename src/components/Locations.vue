@@ -5,15 +5,21 @@
     </div>
     <div v-if="!pageLoading">
       <b-list-group class="align-items-center">
-        <b-list-group-item
-          v-for="(location, index) in locations"
-          :key="index"
-          class="d-flex align-items-center shadow minWidth"
-          v-on:click="changeState(index)"
-          v-b-modal.modal-lg
+        <transition-group
+          name="list"
+          enter-active-class="animated bounceInUp"
+          leave-active-class="animated bounceOutDown"
         >
-          <span class="ml-auto mr-auto">{{ location.name }}</span>
-        </b-list-group-item>
+          <b-list-group-item
+            v-for="(location, index) in locations"
+            :key="index"
+            class="d-flex align-items-center minWidth list-item"
+            v-on:click="changeState(index)"
+            v-b-modal.modal-lg
+          >
+            <span class="ml-auto mr-auto list-name">{{ location.name }}</span>
+          </b-list-group-item>
+        </transition-group>
       </b-list-group>
       <b-modal
         id="modal-lg"
@@ -32,7 +38,14 @@
               img-top
               tag="article"
               style="max-width: 20rem"
-              class="mb-2"
+              class="mb-2 character-card shadow"
+              v-bind:class="[
+                resident.status === 'Dead'
+                  ? 'dead'
+                  : resident.status === 'Alive'
+                  ? 'alive'
+                  : '',
+              ]"
             >
               <b-card-title class="text-truncate">
                 <a :href="'#/character/' + resident.id">
@@ -42,7 +55,7 @@
               <b-card-text>
                 <p class="m-0 text-warning">{{ resident.species }}</p>
                 <p
-                  class="m-0"
+                  class="m-0 text-bold"
                   v-bind:class="[
                     resident.status === 'Dead'
                       ? 'text-danger'
@@ -259,5 +272,33 @@ h1 {
 }
 .minWidth {
   min-width: 500px;
+}
+.character-card:hover {
+  box-shadow: 5px 5px 5px 1px gainsboro !important;
+  transform: scale(1.025);
+}
+
+.list-name:hover {
+  transform: scale(1.2);
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 1s;
+}
+.list-item:hover,
+.list-leave-to {
+  transform: translateY(-1px);
+  box-shadow: 0px 2px 4px 5px rgba(0, 0, 0, 0.25);
+}
+.text-bold {
+  font-weight: bold;
+  font-size: 20px;
+}
+.dead:hover{
+  background: #ffdada;
+}
+.alive:hover{
+  background: #d2ffd2;
 }
 </style>
