@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.f3595a3fc5fadfde86e8d1f7ca813092.js"
+  "/precache-manifest.2ce222979be68877f85fb35f13a4160e.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "love-bonito"});
