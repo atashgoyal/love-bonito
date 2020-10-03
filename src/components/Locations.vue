@@ -5,21 +5,15 @@
     </div>
     <div v-if="!pageLoading">
       <b-list-group class="align-items-center">
-        <transition-group
-          name="list"
-          enter-active-class="animated bounceInUp"
-          leave-active-class="animated bounceOutDown"
+        <b-list-group-item
+          v-for="(location, index) in locations"
+          :key="index"
+          class="d-flex align-items-center minWidth list-item"
+          v-on:click="changeState(index)"
+          v-b-modal.modal-lg
         >
-          <b-list-group-item
-            v-for="(location, index) in locations"
-            :key="index"
-            class="d-flex align-items-center minWidth list-item"
-            v-on:click="changeState(index)"
-            v-b-modal.modal-lg
-          >
-            <span class="ml-auto mr-auto list-name">{{ location.name }}</span>
-          </b-list-group-item>
-        </transition-group>
+          <span class="ml-auto mr-auto list-name">{{ location.name }}</span>
+        </b-list-group-item>
       </b-list-group>
       <b-modal
         id="modal-lg"
@@ -30,47 +24,53 @@
       >
         <div>
           <b-card-group columns>
-            <b-card
-              v-for="(resident, index) in residents"
-              :key="index"
-              v-bind:img-src="resident.image"
-              img-alt="Image"
-              img-top
-              tag="article"
-              style="max-width: 20rem"
-              class="mb-2 character-card shadow"
-              v-bind:class="[
-                resident.status === 'Dead'
-                  ? 'dead'
-                  : resident.status === 'Alive'
-                  ? 'alive'
-                  : '',
-              ]"
+            <transition-group
+              name="list"
+              enter-active-class="animated bounceInUp"
+              leave-active-class="animated bounceOutDown"
             >
-              <b-card-title class="text-truncate">
-                <a :href="'#/character/' + resident.id">
-                  {{ resident.name }}
-                </a>
-              </b-card-title>
-              <b-card-text>
-                <p class="m-0 text-warning">{{ resident.species }}</p>
-                <p
-                  class="m-0 text-bold"
-                  v-bind:class="[
-                    resident.status === 'Dead'
-                      ? 'text-danger'
-                      : resident.status === 'Alive'
-                      ? 'text-success'
-                      : 'text-secondary',
-                  ]"
-                >
-                  {{ resident.status }}
-                </p>
-                <p class="text-truncate m-0" style="min-height: 24px">
-                  {{ resident.type ? resident.type : " " }}
-                </p>
-              </b-card-text>
-            </b-card>
+              <b-card
+                v-for="(resident, index) in residents"
+                :key="index"
+                v-bind:img-src="resident.image"
+                img-alt="Image"
+                img-top
+                tag="article"
+                style="max-width: 20rem"
+                class="mb-2 character-card shadow"
+                v-bind:class="[
+                  resident.status === 'Dead'
+                    ? 'dead'
+                    : resident.status === 'Alive'
+                    ? 'alive'
+                    : '',
+                ]"
+              >
+                <b-card-title class="text-truncate">
+                  <a :href="'#/character/' + resident.id">
+                    {{ resident.name }}
+                  </a>
+                </b-card-title>
+                <b-card-text>
+                  <p class="m-0 text-warning">{{ resident.species }}</p>
+                  <p
+                    class="m-0 text-bold"
+                    v-bind:class="[
+                      resident.status === 'Dead'
+                        ? 'text-danger'
+                        : resident.status === 'Alive'
+                        ? 'text-success'
+                        : 'text-secondary',
+                    ]"
+                  >
+                    {{ resident.status }}
+                  </p>
+                  <p class="text-truncate m-0" style="min-height: 24px">
+                    {{ resident.type ? resident.type : " " }}
+                  </p>
+                </b-card-text>
+              </b-card>
+            </transition-group>
           </b-card-group>
         </div>
       </b-modal>
@@ -295,10 +295,10 @@ h1 {
   font-weight: bold;
   font-size: 20px;
 }
-.dead:hover{
+.dead:hover {
   background: #ffdada;
 }
-.alive:hover{
+.alive:hover {
   background: #d2ffd2;
 }
 </style>
