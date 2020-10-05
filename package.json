@@ -5,7 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "test:unit": "vue-cli-service test:unit --watch",
+    "lint": "vue-cli-service lint",
+    "test": "jest"
   },
   "dependencies": {
     "animate.css": "^4.1.1",
@@ -21,8 +23,11 @@
     "vue-router": "^3.2.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "@types/jest": "^24.0.19",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
+    "@vue/cli-plugin-babel": "^4.5.6",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-pwa": "~4.5.0",
     "@vue/cli-plugin-router": "~4.5.0",
@@ -31,12 +36,18 @@
     "@vue/cli-service": "~4.5.0",
     "@vue/eslint-config-typescript": "^5.0.2",
     "@vue/test-utils": "^1.1.0",
+    "babel-jest": "^26.3.0",
     "babel-plugin-istanbul": "^6.0.0",
+    "babel-plugin-module-resolver": "^4.0.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
     "expect": "^26.4.2",
+    "flush-promises": "^1.0.2",
+    "jest-transform-stub": "^2.0.0",
     "jsdom": "^16.4.0",
     "jsdom-global": "^3.0.2",
+    "miragejs": "^0.1.41",
+    "nock": "^13.0.4",
     "nyc": "^15.1.0",
     "typescript": "~3.9.3",
     "vue-jest": "^3.0.7",
